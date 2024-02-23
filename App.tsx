@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Image, TouchableOpacity, Text, StyleSheet, Animated, Easing } from 'react-native';
 
 const CardGame = () => {
@@ -28,9 +28,32 @@ const CardGame = () => {
     { uriFront: require('./images/bellinham.webp'), uriBack: require('./images/back.png'), name: 'Bellinham' },
   ];
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     initializeGame();
-  }, []);
+    const blink = () => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 1000, 
+            easing: Easing.linear, 
+            useNativeDriver: true, 
+          }),
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 1000,
+            easing: Easing.linear,
+            useNativeDriver: true,
+          }),
+        ]),
+        { iterations: -1 } 
+      ).start();
+    };
+
+    blink(); 
+  }, [fadeAnim]);
 
   const initializeGame = () => {
     const selectedImages = getRandomImages();
@@ -122,14 +145,14 @@ const CardGame = () => {
   return (
     <View style={styles.container}>
       <View style={styles.viewLogo}>
-        <Image source={require('./images/ealogo.png')} style={{ width: 200, height: 200, resizeMode: 'contain' }}/>
+        <Animated.Image source={require('./images/ealogo.png')} style={{ width: 200, height: 200, resizeMode: 'contain', opacity:fadeAnim }}/>
       </View>
       <View style={styles.grid}>
         {cards.map((image, index) => renderCard(image, index))}
       </View>
       {selectedCards.length === 6 &&
         <View style={styles.bottomView}>
-          <Text style={styles.winnerText}>¡Felicidades, has ganado!</Text>
+          <Animated.Text style={{...styles.winnerText, opacity:fadeAnim}}>¡Felicidades, has ganado!</Animated.Text>
           <Text style={styles.attemptsText}>Número de intentos: {attempts}</Text>
         </View>
       }
@@ -143,7 +166,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#1b1e29',
-    
   },
   grid: {
     flexDirection: 'row',
@@ -187,7 +209,6 @@ const styles = StyleSheet.create({
     alignItems: 'center', 
     justifyContent: 'center',
   },
-
 });
 
 export default CardGame;
