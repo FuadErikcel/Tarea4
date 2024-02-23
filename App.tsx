@@ -8,17 +8,18 @@ const CardGame = () => {
   const [attempts, setAttempts] = useState<number>(0);
 
   interface CardImage {
-    uri: number;
+    uriFront: number;
+    uriBack: number;
     name: string;
   }
 
   const cardImages: CardImage[] = [
-    { uri: require('./images/auba.webp'), name: 'Auba' },
-    { uri: require('./images/messi.webp'), name: 'Messi' },
-    { uri: require('./images/ronaldo.webp'), name: 'Ronaldo' },
-    { uri: require('./images/mbappe.webp'), name: 'Mbappe' },
-    { uri: require('./images/neymar.webp'), name: 'Neymar' },
-    { uri: require('./images/haaland.webp'), name: 'Haaland' },
+    { uriFront: require('./images/auba.webp'), uriBack: require('./images/back.png'), name: 'Auba' },
+    { uriFront: require('./images/messi.webp'), uriBack: require('./images/back.png'), name: 'Messi' },
+    { uriFront: require('./images/ronaldo.webp'), uriBack: require('./images/back.png'), name: 'Ronaldo' },
+    { uriFront: require('./images/mbappe.webp'), uriBack: require('./images/back.png'), name: 'Mbappe' },
+    { uriFront: require('./images/neymar.webp'), uriBack: require('./images/back.png'), name: 'Neymar' },
+    { uriFront: require('./images/haaland.webp'), uriBack: require('./images/back.png'), name: 'Haaland' },
   ];
 
   useEffect(() => {
@@ -53,7 +54,7 @@ const CardGame = () => {
   };
 
   const handleCardPress = (index: number): void => {
-    if (flippedCards.length < 2 && !flippedCards.includes(index)) {
+    if (!flippedCards.includes(index)) {
       const newFlippedCards: number[] = [...flippedCards, index];
       setFlippedCards(newFlippedCards);
 
@@ -80,31 +81,11 @@ const CardGame = () => {
 
   const renderCard = (image: CardImage, index: number) => {
     const isFlipped = flippedCards.includes(index) || selectedCards.includes(image);
-    const rotation = isFlipped ? '180deg' : '0deg';
     const flipAnimation = new Animated.Value(isFlipped ? 1 : 0);
-
     const rotateY = flipAnimation.interpolate({
       inputRange: [0, 1],
       outputRange: ['0deg', '180deg'],
     });
-
-    const frontInterpolate = flipAnimation.interpolate({
-      inputRange: [0, 0.5, 0.5, 1],
-      outputRange: ['0deg', '90deg', '-90deg', '0deg'],
-    });
-
-    const backInterpolate = flipAnimation.interpolate({
-      inputRange: [0, 0.5, 0.5, 1],
-      outputRange: ['0deg', '90deg', '-90deg', '0deg'],
-    });
-
-    const frontAnimatedStyle = {
-      transform: [{ rotateY: frontInterpolate }],
-    };
-
-    const backAnimatedStyle = {
-      transform: [{ rotateY: backInterpolate }],
-    };
 
     const flipCard = () => {
       Animated.timing(flipAnimation, {
@@ -116,16 +97,14 @@ const CardGame = () => {
     };
 
     return (
-      <TouchableOpacity key={index} onPress={() => {handleCardPress(index); flipCard();}}>
+      <TouchableOpacity key={index} onPress={() => handleCardPress(index)}>
         <Animated.View
           style={[
             styles.cardContainer,
-            { transform: [{ rotateY: rotation }] }
+            { transform: [{ rotateY: rotateY }] }
           ]}
         >
-          <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
-            <Image source={image.uri} style={styles.cardImage} />
-          </Animated.View>
+          <Image source={isFlipped ? image.uriFront : image.uriBack} style={styles.cardImage} />
         </Animated.View>
       </TouchableOpacity>
     );
@@ -133,11 +112,14 @@ const CardGame = () => {
 
   return (
     <View style={styles.container}>
+      <View style={styles.viewLogo}>
+        <Image source={require('./images/ealogo.png')} style={{ width: 200, height: 200, resizeMode: 'contain' }}/>
+      </View>
       <View style={styles.grid}>
         {cards.map((image, index) => renderCard(image, index))}
       </View>
       {selectedCards.length === 6 &&
-        <View style={styles.container}>
+        <View style={styles.bottomView}>
           <Text style={styles.winnerText}>¡Felicidades, has ganado!</Text>
           <Text style={styles.attemptsText}>Número de intentos: {attempts}</Text>
         </View>
@@ -151,7 +133,8 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#1b1e29',
+    
   },
   grid: {
     flexDirection: 'row',
@@ -165,28 +148,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  card: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    backfaceVisibility: 'hidden',
-  },
-  cardBack: {
-    transform: [{ rotateY: '180deg' }],
-  },
   cardImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
+    top: 40,
   },
   winnerText: {
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color:'#fff'
   },
   attemptsText: {
     fontSize: 18,
+    color:'#fff'
   },
+  viewLogo:{
+    position: 'absolute',
+    top: 50,
+    width: '100%',
+    alignItems: 'center', 
+  },
+  bottomView: {
+    position: 'absolute',
+    bottom: 60,
+    width: '100%',
+    backgroundColor: '#1b1e29', 
+    alignItems: 'center', 
+    justifyContent: 'center',
+  },
+
 });
 
 export default CardGame;
