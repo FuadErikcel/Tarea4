@@ -20,6 +20,12 @@ const CardGame = () => {
     { uriFront: require('./images/mbappe.webp'), uriBack: require('./images/back.png'), name: 'Mbappe' },
     { uriFront: require('./images/neymar.webp'), uriBack: require('./images/back.png'), name: 'Neymar' },
     { uriFront: require('./images/haaland.webp'), uriBack: require('./images/back.png'), name: 'Haaland' },
+    { uriFront: require('./images/virgil.webp'), uriBack: require('./images/back.png'), name: 'Virgil' },
+    { uriFront: require('./images/aitana.webp'), uriBack: require('./images/back.png'), name: 'Aitana' },
+    { uriFront: require('./images/pedri.webp'), uriBack: require('./images/back.png'), name: 'Pedri' },
+    { uriFront: require('./images/kaka.webp'), uriBack: require('./images/back.png'), name: 'Kaka' },
+    { uriFront: require('./images/kimmich.webp'), uriBack: require('./images/back.png'), name: 'Kimmich' },
+    { uriFront: require('./images/bellinham.webp'), uriBack: require('./images/back.png'), name: 'Bellinham' },
   ];
 
   useEffect(() => {
@@ -97,14 +103,17 @@ const CardGame = () => {
     };
 
     return (
-      <TouchableOpacity key={index} onPress={() => handleCardPress(index)}>
+      <TouchableOpacity key={index} onPress={() => {handleCardPress(index); flipCard();}}>
         <Animated.View
           style={[
             styles.cardContainer,
             { transform: [{ rotateY: rotateY }] }
           ]}
         >
-          <Image source={isFlipped ? image.uriFront : image.uriBack} style={styles.cardImage} />
+          <Animated.Image
+            source={isFlipped ? image.uriFront : image.uriBack}
+            style={[styles.cardImage, { transform: [{ rotateY: rotateY }] }]}
+          />
         </Animated.View>
       </TouchableOpacity>
     );
