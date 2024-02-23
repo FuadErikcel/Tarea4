@@ -1,21 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, TouchableOpacity, Text, StyleSheet, Animated, Easing } from 'react-native';
 
-type CardImage = number;
-
 const CardGame = () => {
   const [cards, setCards] = useState<CardImage[]>([]);
   const [selectedCards, setSelectedCards] = useState<CardImage[]>([]);
   const [flippedCards, setFlippedCards] = useState<number[]>([]);
   const [attempts, setAttempts] = useState<number>(0);
 
+  interface CardImage {
+    uri: number;
+    name: string;
+  }
+
   const cardImages: CardImage[] = [
-    require('./images/auba.webp'),
-    require('./images/messi.webp'),
-    require('./images/ronaldo.webp'),
-    require('./images/mbappe.webp'),
-    require('./images/neymar.webp'),
-    require('./images/haaland.webp'),
+    { uri: require('./images/auba.webp'), name: 'Auba' },
+    { uri: require('./images/messi.webp'), name: 'Messi' },
+    { uri: require('./images/ronaldo.webp'), name: 'Ronaldo' },
+    { uri: require('./images/mbappe.webp'), name: 'Mbappe' },
+    { uri: require('./images/neymar.webp'), name: 'Neymar' },
+    { uri: require('./images/haaland.webp'), name: 'Haaland' },
   ];
 
   useEffect(() => {
@@ -30,14 +33,14 @@ const CardGame = () => {
   };
 
   const getRandomImages = (): CardImage[] => {
-    const selectedIndexes: number[] = [];
-    while (selectedIndexes.length < 6) {
-      const randomIndex = Math.floor(Math.random() * cardImages.length);
-      if (!selectedIndexes.includes(randomIndex)) {
-        selectedIndexes.push(randomIndex);
-      }
+    const selectedImages: CardImage[] = [];
+    const availableImages = [...cardImages];
+    while (selectedImages.length < 6 && availableImages.length > 0) {
+      const randomIndex = Math.floor(Math.random() * availableImages.length);
+      const randomImage = availableImages.splice(randomIndex, 1)[0];
+      selectedImages.push(randomImage);
     }
-    return selectedIndexes.map(index => cardImages[index]);
+    return selectedImages;
   };
 
   const shuffleArray = (array: any[]): any[] => {
@@ -51,30 +54,30 @@ const CardGame = () => {
 
   const handleCardPress = (index: number): void => {
     if (flippedCards.length < 2 && !flippedCards.includes(index)) {
-      const newFlippedCards = [...flippedCards, index];
+      const newFlippedCards: number[] = [...flippedCards, index];
       setFlippedCards(newFlippedCards);
-  
+
       if (newFlippedCards.length === 2) {
         setAttempts(attempts + 1);
-        setTimeout(checkForMatch, 1000);
+        checkForMatch(newFlippedCards);
       }
     }
   };
-  
-  
-  const checkForMatch = (): void => {
-    const [index1, index2] = flippedCards;
-    if (cards[index1] === cards[index2]) {
-      setSelectedCards([...selectedCards, cards[index1]]);
-      setFlippedCards([]);
-    } else {
-      setTimeout(() => {
+
+  const checkForMatch = (flipped: number[]): void => {
+    if (flipped.length === 2) {
+      const [index1, index2] = flipped;
+      if (cards[index1] && cards[index2] && cards[index1].name === cards[index2].name) {
+        setSelectedCards([...selectedCards, cards[index1]]);
         setFlippedCards([]);
-      }, 1000);
+      } else {
+        setTimeout(() => {
+          setFlippedCards([]);
+        }, 1000);
+      }
     }
   };
-  
-  
+
   const renderCard = (image: CardImage, index: number) => {
     const isFlipped = flippedCards.includes(index) || selectedCards.includes(image);
     const rotation = isFlipped ? '180deg' : '0deg';
@@ -121,34 +124,26 @@ const CardGame = () => {
           ]}
         >
           <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
-            <Image source={image} style={styles.cardImage} />
+            <Image source={image.uri} style={styles.cardImage} />
           </Animated.View>
         </Animated.View>
       </TouchableOpacity>
     );
-
   };
 
-  const renderGameScreen = () => {
-    return (
-      <View style={styles.container}>
-        <View style={styles.grid}>
-          {cards.map((image, index) => renderCard(image, index))}
+  return (
+    <View style={styles.container}>
+      <View style={styles.grid}>
+        {cards.map((image, index) => renderCard(image, index))}
+      </View>
+      {selectedCards.length === 6 &&
+        <View style={styles.container}>
+          <Text style={styles.winnerText}>¡Felicidades, has ganado!</Text>
+          <Text style={styles.attemptsText}>Número de intentos: {attempts}</Text>
         </View>
-      </View>
-    );
-  };
-
-  const renderWinnerScreen = () => {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.winnerText}>¡Felicidades, has ganado!</Text>
-        <Text style={styles.attemptsText}>Número de intentos: {attempts}</Text>
-      </View>
-    );
-  };
-
-  return selectedCards.length === 6 ? renderWinnerScreen() : renderGameScreen();
+      }
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
