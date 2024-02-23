@@ -1,15 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, TouchableOpacity, Text, StyleSheet, Animated, Easing } from 'react-native';
 
-type CardImage = number;
-
 const CardGame = () => {
-  const [cards, setCards] = useState<CardImage[]>([]);
-  const [selectedCards, setSelectedCards] = useState<CardImage[]>([]);
-  const [flippedCards, setFlippedCards] = useState<number[]>([]);
-  const [attempts, setAttempts] = useState<number>(0);
+  const [cards, setCards] = useState([]);
+  const [selectedCards, setSelectedCards] = useState([]);
+  const [flippedCards, setFlippedCards] = useState([]);
+  const [attempts, setAttempts] = useState(0);
 
-  const cardImages: CardImage[] = [
+  const cardImages = [
     require('./images/auba.webp'),
     require('./images/messi.webp'),
     require('./images/ronaldo.webp'),
@@ -29,8 +27,8 @@ const CardGame = () => {
     setCards(shuffledImages);
   };
 
-  const getRandomImages = (): CardImage[] => {
-    const selectedIndexes: number[] = [];
+  const getRandomImages = () => {
+    const selectedIndexes = [];
     while (selectedIndexes.length < 6) {
       const randomIndex = Math.floor(Math.random() * cardImages.length);
       if (!selectedIndexes.includes(randomIndex)) {
@@ -40,7 +38,7 @@ const CardGame = () => {
     return selectedIndexes.map(index => cardImages[index]);
   };
 
-  const shuffleArray = (array: any[]): any[] => {
+  const shuffleArray = array => {
     const newArray = array.slice();
     for (let i = newArray.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -49,33 +47,29 @@ const CardGame = () => {
     return newArray;
   };
 
-  const handleCardPress = (index: number): void => {
+  const handleCardPress = index => {
     if (flippedCards.length < 2 && !flippedCards.includes(index)) {
       const newFlippedCards = [...flippedCards, index];
       setFlippedCards(newFlippedCards);
-  
+
       if (newFlippedCards.length === 2) {
         setAttempts(attempts + 1);
         setTimeout(checkForMatch, 1000);
       }
     }
   };
-  
-  
-  const checkForMatch = (): void => {
+
+  const checkForMatch = () => {
     const [index1, index2] = flippedCards;
     if (cards[index1] === cards[index2]) {
       setSelectedCards([...selectedCards, cards[index1]]);
       setFlippedCards([]);
     } else {
-      setTimeout(() => {
-        setFlippedCards([]);
-      }, 1000);
+      setFlippedCards([]);
     }
   };
-  
-  
-  const renderCard = (image: CardImage, index: number) => {
+
+  const renderCard = (image, index) => {
     const isFlipped = flippedCards.includes(index) || selectedCards.includes(image);
     const rotation = isFlipped ? '180deg' : '0deg';
     const flipAnimation = new Animated.Value(isFlipped ? 1 : 0);
@@ -113,20 +107,22 @@ const CardGame = () => {
     };
 
     return (
-      <TouchableOpacity key={index} onPress={() => {handleCardPress(index); flipCard();}}>
+      <TouchableOpacity key={index} onPress={() => handleCardPress(index)}>
         <Animated.View
           style={[
             styles.cardContainer,
             { transform: [{ rotateY: rotation }] }
           ]}
         >
+          <Animated.View style={[styles.card, frontAnimatedStyle]}>
+            <Image source={require('./images/cardBack.png')} style={styles.cardImage} />
+          </Animated.View>
           <Animated.View style={[styles.card, styles.cardBack, backAnimatedStyle]}>
             <Image source={image} style={styles.cardImage} />
           </Animated.View>
         </Animated.View>
       </TouchableOpacity>
     );
-
   };
 
   const renderGameScreen = () => {
